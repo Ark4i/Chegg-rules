@@ -314,8 +314,11 @@
         <div class="external-links">
             <a href="https://www.youtube.com/watch?v=ciZCvS2PKNA" target="_blank">📺 Watch Chegg Video by Gerg</a>
             <a href="https://www.scribd.com/document/838634959/CHEGG-Official-Rules-How-to-Play" target="_blank">📜 Normal Chegg Rulebook</a>
+            <a href="editor.html">🛠️ Edit Units</a>
         </div>
     </header>
+
+    <p id="loadStatus" style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">Loading units…</p>
 
     <div class="layout-grid">
         
@@ -392,146 +395,37 @@
     </div>
 
     <script>
-        const units = [
-                    {
-                        id: 0, category: "mc",
-                        name: "Pig (Temperate)", cost: 1, tags: [],
-                        move: [[3,4],[4,3],[4,5],[5,4]],
-                        attack: [[3,4]], 
-                        desc: "Standard temperate pig with cardinal movement."
-                    },
-                    {
-                        id: 1, category: "mc",
-                        name: "Pig (Warm)", cost: 1, tags: [],
-                        move: [[3,5],[4,3],[4,5],[5,3]],
-                        attack: [[3,4]], 
-                        desc: "Warm variant with top-right and bottom-left diagonal mobility."
-                    },
-                    {
-                        id: 2, category: "mc",
-                        name: "Pig (Cold)", cost: 1, tags: [],
-                        move: [[3,3],[3,4],[5,4],[5,5]],
-                        attack: [[3,4]], 
-                        desc: "Cold variant with top-left and bottom-right corner mobility."
-                    },
-                    {
-                        id: 3, category: "mc",
-                        name: "Cow (Temperate)", cost: 2, tags: [],
-                        ability: "Bull Rush (2 Mana)", abilityCost: 2,
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,4]],
-                        attack: [[3,4],[4,3],[4,5]],
-                        desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
-                    },
-                    {
-                        id: 4, category: "mc",
-                        name: "Cow (Warm)", cost: 2, tags: [],
-                        ability: "Bull Rush (2 Mana)", abilityCost: 2,
-                        move: [[3,4],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[4,3],[4,5],[5,4]],
-                        desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
-                    },
-                    {
-                        id: 5, category: "mc",
-                        name: "Cow (Cold)", cost: 2, tags: [],
-                        ability: "Bull Rush (2 Mana)", abilityCost: 2,
-                        move: [[3,4],[4,3],[4,5],[5,4]],
-                        attack: [[3,3],[3,5],[4,3],[4,5],[5,4]],
-                        desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
-                    },
-                    {
-                        id: 6, category: "mc",
-                        name: "Chicken (Temperate)", cost: 1, tags: [],
-                        passive: "Pluck (Knockback 1 tile, 0 DMG)",
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[3,4]],
-                        desc: "Pluck: Deals 0 damage; knocks target back 1 tile."
-                    },
-                    {
-                        id: 7, category: "mc",
-                        name: "Chicken (Warm)", cost: 1, tags: [],
-                        passive: "Pluck (Knockback 1 tile, 0 DMG)",
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[3,5]],
-                        desc: "Pluck: Top-right attack direction."
-                    },
-                    {
-                        id: 8, category: "mc",
-                        name: "Chicken (Cold)", cost: 1, tags: [],
-                        passive: "Pluck (Knockback 1 tile, 0 DMG)",
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[3,3]],
-                        desc: "Pluck: Top-left attack direction."
-                    },
-                    {
-                        id: 9, category: "mc",
-                        name: "Creeper", cost: 1, tags: [],
-                        passive: "Kaboom (Self-destruct on attack)",
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        desc: "Explodes upon attacking, killing itself and damaging area."
-                    },
-                    {
-                        id: 10, category: "mc",
-                        name: "Skeleton", cost: 4, tags: [],
-                        move: [[3,3],[3,5],[4,3],[4,5],[5,3],[5,5]],
-                        // 9x9 grid allows full Range 4! (indices 0 and 8 now added)
-                        attack: [[3,4],[2,4],[1,4],[0,4],[5,4],[6,4],[7,4],[8,4],[4,3],[4,2],[4,1],[4,0],[4,5],[4,6],[4,7],[4,8]],
-                        desc: "Long range 4-tile sniper: hits all squares from 1 up to 4 tiles away orthogonally."
-                    },
-                    {
-                        id: 11, category: "mc",
-                        name: "Spider", cost: 3, tags: [],
-                        ability: "Webber (1 Mana)", abilityCost: 1,
-                        move: [[3,3],[3,5],[5,3],[5,5]],
-                        attack: [[3,4]],
-                        desc: "Webber: Root an enemy for 2 turns."
-                    },
-                    {
-                        id: 12, category: "mc",
-                        name: "Spider Jockey", cost: "F", tags: ["Fusion"],
-                        ability: "Webber (1 Mana)", abilityCost: 1, isFusion: true,
-                        move: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        attack: [[3,3],[3,5],[5,3],[5,5],[3,4],[2,4],[1,4],[0,4],[5,4],[6,4],[7,4],[8,4],[4,3],[4,2],[4,1],[4,0],[4,5],[4,6],[4,7],[4,8]],
-                        desc: "Fusion of Spider + Skeleton. Hyper mobile with long-range 4-tile reach."
-                    },
-                    {
-                        id: 13, category: "mc",
-                        name: "Zombie", cost: 2, tags: [],
-                        move: [[3,4],[4,3],[4,5],[5,4]],
-                        attack: [[3,4],[2,4],[5,4],[6,4],[4,3],[4,2],[4,5],[4,6]],
-                        desc: "Extended 2-tile cardinal attack range: hits squares 1 and 2 away."
-                    },
-                    {
-                        id: 14, category: "non-mc",
-                        name: "Rio (Infinity's Bird)", cost: 5, tags: ["FL", "L"],
-                        move: [[2,3],[2,4],[2,5],[3,2],[3,4],[3,6],[4,2],[4,3],[4,5],[4,6],[5,2],[5,4],[5,6],[6,3],[6,4],[6,5]],
-                        attack: [[3,3],[2,2],[3,5],[2,6],[5,3],[6,2],[5,5],[6,6]],
-                        desc: "Legendary bird with massive flying reach and 2-tile corner attacks."
-                    },
-                    {
-                        id: 15, category: "non-mc",
-                        name: "Avi (Infinity's Past Bird)", cost: 3, tags: ["FL", "L"],
-                        move: [[2,4],[3,4],[4,3],[4,5],[5,4],[6,4]],
-                        attack: [[3,3],[3,5],[5,3],[5,5]],
-                        desc: "Past legend with quick cross movement and diagonal attacks."
-                    },
-                    {
-                        id: 16, category: "non-mc",
-                        name: "Sjaakie (Infinity's Past Bird)", cost: 6, tags: ["FL", "L"],
-                        move: [[0,0],[0,8],[8,0],[8,8],[1,1],[1,7],[7,1],[7,7],[2,2],[2,6],[6,2],[6,6],[3,3],[3,5],[5,3],[5,5],[3,4],[4,3],[4,5],[5,4]],
-                        attack: [[3,3],[3,4],[3,5],[4,3],[4,5],[5,3],[5,4],[5,5]],
-                        desc: "Has infinite movement lines across diagonals and wide area attacks."
-                    }
-                ];
-
+        // Unit data now lives in units.json (in this same folder) instead of being
+        // hardcoded here. The editor page (editor.html) edits that file directly
+        // via the GitHub API, so anyone who reloads this page after a save sees
+        // the update — no server or database required.
+        let units = [];
         let selectedUnit = null;
         let currentMana = 0;
         let viewMode = 'both';
 
-        function init() {
-            renderUnitCards();
-            if (units.length > 0) {
-                selectUnit(units[0].id);
+        async function loadUnits() {
+            // cache-bust so browsers/CDNs don't serve a stale copy of units.json
+            const res = await fetch(`units.json?t=${Date.now()}`);
+            if (!res.ok) throw new Error(`Failed to load units.json (${res.status})`);
+            units = await res.json();
+        }
+
+        async function init() {
+            const statusEl = document.getElementById("loadStatus");
+            try {
+                await loadUnits();
+                renderUnitCards();
+                if (units.length > 0) {
+                    selectUnit(units[0].id);
+                }
+                if (statusEl) statusEl.remove();
+            } catch (err) {
+                console.error(err);
+                if (statusEl) {
+                    statusEl.textContent = "Couldn't load units.json. If you're opening this file directly from disk, run it through a local server (e.g. `python3 -m http.server`) instead — browsers block fetch() on file:// URLs.";
+                    statusEl.style.color = "var(--accent-red)";
+                }
             }
         }
 

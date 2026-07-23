@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Chegg+ | Unit Editor</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent-blue: #38bdf8;
+            --accent-amber: #f59e0b;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-purple: #c084fc;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-left: 6px solid var(--accent-amber);
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+        .external-links { margin-top: 12px; display: flex; gap: 16px; }
+        .external-links a { color: var(--accent-blue); text-decoration: none; font-size: 13px; font-weight: 600; }
+        .external-links a:hover { text-decoration: underline; }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            font-size: 18px; font-weight: 700; color: var(--accent-blue);
+            margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;
+        }
+
+        .card h2.settings-toggle { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .card h2.settings-toggle span.chev { font-size: 13px; color: var(--text-muted); }
+
+        details.settings-body { margin-top: 4px; }
+        details.settings-body summary { display: none; }
+
+        label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; margin-top: 12px; }
+        label:first-child { margin-top: 0; }
+
+        input[type="text"], input[type="password"], input[type="number"], textarea, select {
+            width: 100%;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 10px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent-blue); }
+
+        textarea { resize: vertical; min-height: 60px; }
+
+        .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .checkbox-row input { width: auto; }
+        .checkbox-row label { margin: 0; text-transform: none; font-size: 13px; color: var(--text-main); font-weight: 500; }
+
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+        @media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr; } }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+        .btn:hover { background-color: #7dd3fc; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.secondary { background-color: #334155; color: var(--text-main); }
+        .btn.secondary:hover { background-color: #475569; }
+        .btn.danger { background-color: var(--accent-red); color: #fff; }
+        .btn.danger:hover { background-color: #f87171; }
+        .btn.success { background-color: var(--accent-green); color: #06280f; }
+        .btn.success:hover { background-color: #4ade80; }
+
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+        .layout-grid { display: grid; grid-template-columns: 340px 1fr 340px; gap: 24px; align-items: start; }
+        @media (max-width: 1150px) { .layout-grid { grid-template-columns: 1fr; } }
+
+        .unit-list { max-height: 640px; overflow-y: auto; padding-right: 4px; }
+        .unit-list-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px;
+            margin-bottom: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s ease;
+        }
+        .unit-list-item:hover, .unit-list-item.active { border-color: var(--accent-blue); background-color: var(--bg-card-hover); }
+        .unit-list-item .badge-mini { font-size: 10px; color: var(--text-muted); }
+
+        .sim-grid {
+            display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px;
+            background-color: #090d16; padding: 8px; border-radius: 8px;
+            border: 1px solid var(--border-color); margin: 12px 0;
+        }
+        .sim-cell {
+            aspect-ratio: 1; background-color: #1e293b; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: monospace; font-weight: bold; font-size: 12px; color: var(--text-muted);
+            transition: all 0.15s ease; user-select: none; cursor: pointer;
+        }
+        .sim-cell:hover { outline: 1px solid var(--accent-blue); }
+        .sim-cell.center { background-color: var(--accent-blue) !important; color: #0f172a !important; cursor: default; }
+        .sim-cell.center:hover { outline: none; }
+        .sim-cell.move { background-color: rgba(34, 197, 94, 0.3); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.6); }
+        .sim-cell.attack { background-color: rgba(239, 68, 68, 0.3); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.6); }
+        .sim-cell.both { background-color: rgba(245, 158, 11, 0.3); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.6); }
+
+        .toggle-container {
+            display: flex; background-color: #0f172a; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 4px; gap: 4px;
+        }
+        .toggle-btn {
+            flex: 1; padding: 6px 0; border: none; border-radius: 6px; font-weight: 700;
+            font-size: 12px; color: var(--text-muted); background-color: transparent; cursor: pointer;
+        }
+        .toggle-btn.active-move { background-color: var(--accent-green); color: #0f172a; }
+        .toggle-btn.active-attack { background-color: var(--accent-red); color: #ffffff; }
+
+        .hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+        .status-msg { font-size: 13px; margin-top: 10px; padding: 8px 10px; border-radius: 6px; display: none; }
+        .status-msg.show { display: block; }
+        .status-msg.ok { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .status-msg.err { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .status-msg.pending { background: rgba(56,189,248,0.15); color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+
+        pre#jsonPreview {
+            background: #090d16; border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 12px; font-size: 11px; max-height: 260px; overflow: auto; white-space: pre-wrap; word-break: break-word;
+        }
+
+        .field-row { display: flex; gap: 12px; }
+        .field-row > div { flex: 1; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🛠️ CUSTOM CHEGG+ — UNIT EDITOR</h1>
+        <p>Edit units here, hit Publish, and anyone who reloads the main page will see your changes once GitHub Pages redeploys (usually well under a minute).</p>
+        <div class="external-links">
+            <a href="chegg_rules.html">← Back to Rulebook</a>
+        </div>
+    </header>
+
+    <div class="card">
+        <h2 class="settings-toggle" onclick="toggleSettings()">
+            <span>⚙️ Repository Settings</span>
+            <span class="chev" id="settingsChev">show ▾</span>
+        </h2>
+        <div id="settingsBody" style="display:none;">
+            <p class="hint" style="margin-bottom: 12px;">
+                Publishing writes directly to <code>units.json</code> in your GitHub repo using the GitHub REST API,
+                so you'll need a <a href="https://github.com/settings/tokens?type=beta" target="_blank" style="color: var(--accent-blue);">personal access token</a>
+                with read/write access to this one repo's contents. The token is only ever sent from your browser straight to
+                <code>api.github.com</code> — it's never stored anywhere but this browser (and only if you tick "remember token" below).
+            </p>
+            <div class="settings-grid">
+                <div>
+                    <label for="ghOwner">GitHub username / org</label>
+                    <input type="text" id="ghOwner" placeholder="e.g. yourname">
+                    <label for="ghRepo">Repository name</label>
+                    <input type="text" id="ghRepo" placeholder="e.g. custom-chegg">
+                </div>
+                <div>
+                    <label for="ghBranch">Branch</label>
+                    <input type="text" id="ghBranch" value="main">
+                    <label for="ghPath">Path to units.json in repo</label>
+                    <input type="text" id="ghPath" value="units.json">
+                </div>
+            </div>
+            <label for="ghToken">Personal access token</label>
+            <input type="password" id="ghToken" placeholder="ghp_... or github_pat_...">
+            <div class="checkbox-row">
+                <input type="checkbox" id="rememberSettings">
+                <label for="rememberSettings">Remember owner/repo/branch/path in this browser</label>
+            </div>
+            <div class="checkbox-row">
+                <input type="checkbox" id="rememberToken">
+                <label for="rememberToken">Also remember the token in this browser (only do this on a private device)</label>
+            </div>
+            <div class="btn-row">
+                <button class="btn secondary" onclick="saveSettings()">Save settings</button>
+                <button class="btn secondary" onclick="loadFromGitHub()">Load units.json from GitHub</button>
+                <button class="btn secondary" onclick="loadFromLocalFile()">Load units.json (local copy)</button>
+            </div>
+            <div id="settingsStatus" class="status-msg"></div>
+        </div>
+    </div>
+
+    <div class="layout-grid">
+
+        <!-- LEFT: UNIT LIST -->
+        <div class="card">
+            <h2>Units (<span id="unitCount">0</span>)</h2>
+            <div class="btn-row" style="margin-top: 0; margin-bottom: 12px;">
+                <button class="btn success" onclick="addUnit()">+ New Unit</button>
+            </div>
+            <div class="unit-list" id="unitList"></div>
+        </div>
+
+        <!-- MIDDLE: EDIT FORM -->
+        <div class="card" id="editForm" style="display:none;">
+            <h2>Edit Unit</h2>
+
+            <label for="fName">Name</label>
+            <input type="text" id="fName" oninput="updateField('name', this.value)">
+
+            <div class="field-row">
+                <div>
+                    <label for="fCategory">Category</label>
+                    <select id="fCategory" onchange="updateField('category', this.value)">
+                        <option value="mc">Minecraft Mob</option>
+                        <option value="non-mc">Non-Minecraft / Custom / Legend</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="fCost">Cost (number, or "F" for fusion-only)</label>
+                    <input type="text" id="fCost" oninput="updateField('cost', this.value)">
+                </div>
+            </div>
+
+            <label>Tags</label>
+            <div class="checkbox-row"><input type="checkbox" id="tagFL" onchange="toggleTag('FL', this.checked)"><label for="tagFL">FL (Flying)</label></div>
+            <div class="checkbox-row"><input type="checkbox" id="tagL" onchange="toggleTag('L', this.checked)"><label for="tagL">L (Legend)</label></div>
+            <div class="checkbox-row"><input type="checkbox" id="tagFusion" onchange="toggleTag('Fusion', this.checked)"><label for="tagFusion">Fusion (also sets isFusion)</label></div>
+
+            <div class="field-row">
+                <div>
+                    <label for="fAbility">Ability (optional, leave blank for none)</label>
+                    <input type="text" id="fAbility" placeholder="e.g. Bull Rush (2 Mana)" oninput="updateField('ability', this.value)">
+                </div>
+                <div>
+                    <label for="fAbilityCost">Ability Mana Cost</label>
+                    <input type="number" id="fAbilityCost" min="0" oninput="updateField('abilityCost', this.value === '' ? undefined : Number(this.value))">
+                </div>
+            </div>
+
+            <label for="fPassive">Passive (optional, leave blank for none)</label>
+            <input type="text" id="fPassive" placeholder="e.g. Pluck (Knockback 1 tile, 0 DMG)" oninput="updateField('passive', this.value)">
+
+            <label for="fDesc">Description</label>
+            <textarea id="fDesc" oninput="updateField('desc', this.value)"></textarea>
+
+            <label>Move / Attack Pattern — click cells to toggle</label>
+            <div class="toggle-container">
+                <button class="toggle-btn active-move" id="btnPaintMove" onclick="setPaintMode('move')">Paint Movement</button>
+                <button class="toggle-btn" id="btnPaintAttack" onclick="setPaintMode('attack')">Paint Attack</button>
+            </div>
+            <p class="hint">Click a tile to add it to the selected pattern; click again to remove it. "O" is the unit's own position.</p>
+            <div class="sim-grid" id="editGrid"></div>
+
+            <div class="btn-row">
+                <button class="btn danger" onclick="deleteCurrentUnit()">Delete This Unit</button>
+            </div>
+        </div>
+        <div class="card" id="noSelection">
+            <p class="hint">Select a unit on the left to edit it, or create a new one.</p>
+        </div>
+
+        <!-- RIGHT: PREVIEW + PUBLISH -->
+        <div class="card">
+            <h2>Publish</h2>
+            <p class="hint">Publishing writes the full unit list to <code>units.json</code> in your repo. GitHub Pages then rebuilds automatically — no need for this to happen in real time, just have people reload the rulebook page after.</p>
+            <div class="btn-row">
+                <button class="btn" id="publishBtn" onclick="publishToGitHub()">🚀 Publish to GitHub</button>
+                <button class="btn secondary" onclick="downloadJson()">⬇ Download units.json</button>
+            </div>
+            <p class="hint">No token, or don't want to grant one? Download the file and drag it into your repo on github.com to overwrite <code>units.json</code> by hand — same result.</p>
+            <div id="publishStatus" class="status-msg"></div>
+
+            <h2 style="margin-top: 20px;">Live JSON Preview</h2>
+            <pre id="jsonPreview"></pre>
+        </div>
+    </div>
+
+    <script>
+        let editorUnits = [];
+        let currentIndex = null;
+        let paintMode = 'move';
+        let currentSha = null; // sha of the last-loaded units.json, used to publish safely
+
+        // ---------- Settings ----------
+        function toggleSettings() {
+            const body = document.getElementById("settingsBody");
+            const chev = document.getElementById("settingsChev");
+            const show = body.style.display === "none";
+            body.style.display = show ? "block" : "none";
+            chev.textContent = show ? "hide ▴" : "show ▾";
+        }
+
+        function loadSettingsFromStorage() {
+            const saved = localStorage.getItem("cheggEditorSettings");
+            if (saved) {
+                try {
+                    const s = JSON.parse(saved);
+                    document.getElementById("ghOwner").value = s.owner || "";
+                    document.getElementById("ghRepo").value = s.repo || "";
+                    document.getElementById("ghBranch").value = s.branch || "main";
+                    document.getElementById("ghPath").value = s.path || "units.json";
+                    document.getElementById("rememberSettings").checked = true;
+                } catch (e) { /* ignore corrupt storage */ }
+            }
+            const savedToken = localStorage.getItem("cheggEditorToken");
+            if (savedToken) {
+                document.getElementById("ghToken").value = savedToken;
+                document.getElementById("rememberToken").checked = true;
+            }
+            // Auto-open settings if nothing saved yet, so first-time users see it
+            if (!saved) toggleSettings();
+        }
+
+        function saveSettings() {
+            const owner = document.getElementById("ghOwner").value.trim();
+            const repo = document.getElementById("ghRepo").value.trim();
+            const branch = document.getElementById("ghBranch").value.trim() || "main";
+            const path = document.getElementById("ghPath").value.trim() || "units.json";
+
+            if (document.getElementById("rememberSettings").checked) {
+                localStorage.setItem("cheggEditorSettings", JSON.stringify({ owner, repo, branch, path }));
+            } else {
+                localStorage.removeItem("cheggEditorSettings");
+            }
+
+            if (document.getElementById("rememberToken").checked) {
+                localStorage.setItem("cheggEditorToken", document.getElementById("ghToken").value.trim());
+            } else {
+                localStorage.removeItem("cheggEditorToken");
+            }
+
+            showStatus("settingsStatus", "Settings saved.", "ok");
+        }
+
+        function getGhConfig() {
+            return {
+                owner: document.getElementById("ghOwner").value.trim(),
+                repo: document.getElementById("ghRepo").value.trim(),
+                branch: document.getElementById("ghBranch").value.trim() || "main",
+                path: document.getElementById("ghPath").value.trim() || "units.json",
+                token: document.getElementById("ghToken").value.trim()
+            };
+        }
+
+        function showStatus(elId, msg, type) {
+            const el = document.getElementById(elId);
+            el.textContent = msg;
+            el.className = `status-msg show ${type}`;
+        }
+
+        // ---------- Loading data ----------
+        function utf8ToB64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+        function b64ToUtf8(str) {
+            return decodeURIComponent(escape(atob(str)));
+        }
+
+        async function loadFromGitHub() {
+            const cfg = getGhConfig();
+            if (!cfg.owner || !cfg.repo) {
+                showStatus("settingsStatus", "Enter a GitHub username and repo first.", "err");
+                return;
+            }
+            showStatus("settingsStatus", "Loading units.json from GitHub…", "pending");
+            try {
+                const headers = { Accept: "application/vnd.github+json" };
+                if (cfg.token) headers.Authorization = `Bearer ${cfg.token}`;
+                const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}?ref=${encodeURIComponent(cfg.branch)}`;
+                const res = await fetch(url, { headers });
+                if (!res.ok) {
+                    const body = await res.json().catch(() => ({}));
+                    throw new Error(`GitHub returned ${res.status}: ${body.message || res.statusText}`);
+                }
+                const data = await res.json();
+                currentSha = data.sha;
+                const text = b64ToUtf8(data.content.replace(/\n/g, ""));
+                editorUnits = JSON.parse(text);
+                renderUnitList();
+                updatePreview();
+                showStatus("settingsStatus", `Loaded ${editorUnits.length} units from GitHub.`, "ok");
+            } catch (err) {
+                console.error(err);
+                showStatus("settingsStatus", err.message, "err");
+            }
+        }
+
+        async function loadFromLocalFile() {
+            showStatus("settingsStatus", "Loading local units.json…", "pending");
+            try {
+                const res = await fetch(`units.json?t=${Date.now()}`);
+                if (!res.ok) throw new Error(`Couldn't fetch local units.json (${res.status})`);
+                editorUnits = await res.json();
+                currentSha = null; // unknown — will be looked up fresh at publish time
+                renderUnitList();
+                updatePreview();
+                showStatus("settingsStatus", `Loaded ${editorUnits.length} units from the local file.`, "ok");
+            } catch (err) {
+                console.error(err);
+                showStatus("settingsStatus", err.message, "err");
+            }
+        }
+
+        // ---------- Unit list ----------
+        function renderUnitList() {
+            document.getElementById("unitCount").textContent = editorUnits.length;
+            const list = document.getElementById("unitList");
+            list.innerHTML = "";
+            editorUnits.forEach((u, i) => {
+                const item = document.createElement("div");
+                item.className = `unit-list-item ${i === currentIndex ? "active" : ""}`;
+                item.onclick = () => selectUnit(i);
+                item.innerHTML = `<span>${u.name || "(unnamed unit)"}</span><span class="badge-mini">${u.category === "mc" ? "MC" : "Custom"} · Cost ${u.cost}</span>`;
+                list.appendChild(item);
+            });
+        }
+
+        function addUnit() {
+            const maxId = editorUnits.reduce((m, u) => Math.max(m, Number(u.id) || 0), -1);
+            const newUnit = {
+                id: maxId + 1, category: "mc", name: "New Unit", cost: 1, tags: [],
+                move: [], attack: [], desc: ""
+            };
+            editorUnits.push(newUnit);
+            renderUnitList();
+            selectUnit(editorUnits.length - 1);
+            updatePreview();
+        }
+
+        function deleteCurrentUnit() {
+            if (currentIndex === null) return;
+            if (!confirm(`Delete "${editorUnits[currentIndex].name}"? This can't be undone here (though you can re-load from GitHub before publishing).`)) return;
+            editorUnits.splice(currentIndex, 1);
+            currentIndex = null;
+            document.getElementById("editForm").style.display = "none";
+            document.getElementById("noSelection").style.display = "block";
+            renderUnitList();
+            updatePreview();
+        }
+
+        // ---------- Edit form ----------
+        function selectUnit(i) {
+            currentIndex = i;
+            const u = editorUnits[i];
+            document.getElementById("editForm").style.display = "block";
+            document.getElementById("noSelection").style.display = "none";
+
+            document.getElementById("fName").value = u.name || "";
+            document.getElementById("fCategory").value = u.category || "mc";
+            document.getElementById("fCost").value = u.cost ?? "";
+            document.getElementById("fAbility").value = u.ability || "";
+            document.getElementById("fAbilityCost").value = u.abilityCost ?? "";
+            document.getElementById("fPassive").value = u.passive || "";
+            document.getElementById("fDesc").value = u.desc || "";
+
+            const tags = u.tags || [];
+            document.getElementById("tagFL").checked = tags.includes("FL");
+            document.getElementById("tagL").checked = tags.includes("L");
+            document.getElementById("tagFusion").checked = tags.includes("Fusion");
+
+            renderUnitList();
+            renderEditGrid();
+        }
+
+        function updateField(field, value) {
+            if (currentIndex === null) return;
+            editorUnits[currentIndex][field] = value;
+            if (field === "name" || field === "category" || field === "cost") renderUnitList();
+            updatePreview();
+        }
+
+        function toggleTag(tag, checked) {
+            if (currentIndex === null) return;
+            const u = editorUnits[currentIndex];
+            u.tags = u.tags || [];
+            if (checked && !u.tags.includes(tag)) u.tags.push(tag);
+            if (!checked) u.tags = u.tags.filter(t => t !== tag);
+            if (tag === "Fusion") u.isFusion = checked;
+            updatePreview();
+        }
+
+        function setPaintMode(mode) {
+            paintMode = mode;
+            document.getElementById("btnPaintMove").className = `toggle-btn ${mode === "move" ? "active-move" : ""}`;
+            document.getElementById("btnPaintAttack").className = `toggle-btn ${mode === "attack" ? "active-attack" : ""}`;
+        }
+
+        function renderEditGrid() {
+            const grid = document.getElementById("editGrid");
+            grid.innerHTML = "";
+            const u = editorUnits[currentIndex];
+            u.move = u.move || [];
+            u.attack = u.attack || [];
+            const center = [4, 4];
+
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const cell = document.createElement("div");
+                    cell.className = "sim-cell";
+                    const isCenter = r === center[0] && c === center[1];
+                    const isMove = u.move.some(p => p[0] === r && p[1] === c);
+                    const isAttack = u.attack.some(p => p[0] === r && p[1] === c);
+
+                    if (isCenter) {
+                        cell.classList.add("center");
+                        cell.innerText = "O";
+                    } else if (isMove && isAttack) {
+                        cell.classList.add("both");
+                        cell.innerText = "⚡";
+                    } else if (isMove) {
+                        cell.classList.add("move");
+                        cell.innerText = "M";
+                    } else if (isAttack) {
+                        cell.classList.add("attack");
+                        cell.innerText = "A";
+                    } else {
+                        cell.innerText = "•";
+                    }
+
+                    if (!isCenter) {
+                        cell.onclick = () => paintCell(r, c);
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function paintCell(r, c) {
+            const u = editorUnits[currentIndex];
+            const arr = paintMode === "move" ? u.move : u.attack;
+            const idx = arr.findIndex(p => p[0] === r && p[1] === c);
+            if (idx >= 0) arr.splice(idx, 1);
+            else arr.push([r, c]);
+            renderEditGrid();
+            updatePreview();
+        }
+
+        // ---------- Preview & publish ----------
+        function updatePreview() {
+            document.getElementById("jsonPreview").textContent = JSON.stringify(editorUnits, null, 2);
+        }
+
+        function downloadJson() {
+            const blob = new Blob([JSON.stringify(editorUnits, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "units.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function publishToGitHub() {
+            const cfg = getGhConfig();
+            if (!cfg.owner || !cfg.repo || !cfg.token) {
+                showStatus("publishStatus", "Fill in owner, repo, and token in Repository Settings first.", "err");
+                return;
+            }
+            const btn = document.getElementById("publishBtn");
+            btn.disabled = true;
+            showStatus("publishStatus", "Publishing…", "pending");
+            try {
+                const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${cfg.token}` };
+                const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`;
+
+                // Fetch the latest sha right before writing, to avoid overwriting someone else's edit
+                let sha = currentSha;
+                const getRes = await fetch(`${url}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
+                if (getRes.ok) {
+                    const getData = await getRes.json();
+                    sha = getData.sha;
+                } else if (getRes.status !== 404) {
+                    const body = await getRes.json().catch(() => ({}));
+                    throw new Error(`Couldn't check current file: ${body.message || getRes.statusText}`);
+                }
+
+                const putRes = await fetch(url, {
+                    method: "PUT",
+                    headers: { ...headers, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        message: `Update units.json via editor (${new Date().toISOString()})`,
+                        content: utf8ToB64(JSON.stringify(editorUnits, null, 2)),
+                        branch: cfg.branch,
+                        ...(sha ? { sha } : {})
+                    })
+                });
+
+                if (!putRes.ok) {
+                    const body = await putRes.json().catch(() => ({}));
+                    throw new Error(`GitHub returned ${putRes.status}: ${body.message || putRes.statusText}`);
+                }
+
+                const putData = await putRes.json();
+                currentSha = putData.content.sha;
+                showStatus("publishStatus", "Published! GitHub Pages will rebuild shortly — reload the rulebook page in a bit to see it live.", "ok");
+            } catch (err) {
+                console.error(err);
+                showStatus("publishStatus", err.message, "err");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ---------- Init ----------
+        window.onload = async () => {
+            loadSettingsFromStorage();
+            setPaintMode("move");
+            await loadFromLocalFile();
+        };
+    </script>
+</body>
+</html>
