@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Chegg+ | Interactive Rulebook & Tactical Simulator</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent-blue: #38bdf8;
+            --accent-amber: #f59e0b;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-purple: #c084fc;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-left: 6px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .external-links {
+            margin-top: 12px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .external-links a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .external-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* LAYOUT GRID */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARD STYLES */
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent-amber);
+            margin: 16px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rule-list {
+            list-style: none;
+        }
+
+        .rule-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .rule-list li::before {
+            content: "•";
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 18px;
+            position: absolute;
+            left: 0;
+            top: -2px;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-right: 6px;
+        }
+
+        .badge-cost { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-fl { background-color: rgba(56, 189, 248, 0.2); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-l { background-color: rgba(245, 158, 11, 0.2); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-f { background-color: rgba(192, 132, 252, 0.2); color: #e9d5ff; border: 1px solid rgba(192, 132, 252, 0.3); }
+
+        /* UNIT SELECTOR / CARDS */
+        .unit-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .unit-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .unit-card:hover, .unit-card.active {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            background-color: var(--bg-card-hover);
+        }
+
+        .unit-card.active {
+            box-shadow: 0 0 0 2px var(--accent-blue);
+        }
+
+        .unit-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .unit-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .unit-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* SIMULATOR STYLES */
+        .sticky-simulator {
+            position: sticky;
+            top: 24px;
+        }
+
+        /* MODE TOGGLE SWITCH */
+        .toggle-container {
+            display: flex;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 4px;
+            margin: 12px 0;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 6px 0;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--text-muted);
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active-both {
+            background-color: var(--accent-amber);
+            color: #0f172a;
+        }
+
+        .toggle-btn.active-move {
+            background-color: var(--accent-green);
+            color: #0f172a;
+        }
+
+        .toggle-btn.active-attack {
+            background-color: var(--accent-red);
+            color: #ffffff;
+        }
+
+        .sim-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            background-color: #090d16;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+
+        .sim-cell {
+            aspect-ratio: 1;
+            background-color: #1e293b;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 13px;
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .sim-cell.center {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .sim-cell.move {
+            background-color: rgba(34, 197, 94, 0.3);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.6);
+        }
+
+        .sim-cell.attack {
+            background-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.6);
+        }
+
+        .sim-cell.both {
+            background-color: rgba(245, 158, 11, 0.3);
+            color: #fde047;
+            border: 1px solid rgba(245, 158, 11, 0.6);
+        }
+
+        /* MANA CALCULATOR */
+        .calculator-panel {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .calc-btn {
+            background-color: var(--accent-blue);
+            color: #0f172a;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .calc-btn:hover {
+            background-color: #7dd3fc;
+        }
+
+        .mana-total {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-amber);
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CUSTOM CHEGG+</h1>
+        <p>Interactive Rulebook, Tactical Range Simulator & Mana Calculator</p>
+        <div class="external-links">
+            <a href="https://www.youtube.com/watch?v=ciZCvS2PKNA" target="_blank">📺 Watch Chegg Video by Gerg</a>
+            <a href="https://www.scribd.com/document/838634959/CHEGG-Official-Rules-How-to-Play" target="_blank">📜 Normal Chegg Rulebook</a>
+        </div>
+    </header>
+
+    <div class="layout-grid">
+        
+        <!-- LEFT COLUMN: RULES & UNIT CODEX -->
+        <div class="main-content">
+            
+            <section class="card">
+                <h2>📜 Rules Overview</h2>
+                <ul class="rule-list">
+                    <li><strong>Core Rule:</strong> Standard Chegg rules apply. The <strong>Villager</strong> is replaced by a <strong>Crown</strong> (movement remains unchanged).</li>
+                    <li><strong>Legend (L):</strong> Max 1 copy per deck. End of turn requires <strong>1 unspent Mana per Legend on field</strong>, or they return to your deck.</li>
+                    <li><strong>Fusion (F):</strong> Costs <strong>5 Mana</strong> to fuse. Requires both component troops on field. Fused troops return to deck. Max 3 total Fusion cards per deck.</li>
+                    <li><strong>Grid Notations:</strong> <code>x</code> = Standard tile range | <code>o</code> = Unit | <code>Numbers (2, 4)</code> = Range depth (hitting squares 1 up to N) | <code>I</code> = Infinite range.</li>
+                </ul>
+            </section>
+
+            <section class="card">
+                <h2>🎮 Unit Roster</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Click any unit card to simulate its grid pattern and test action mana costs.</p>
+                
+                <div class="section-title">🧱 Minecraft Mobs</div>
+                <div class="unit-selector" id="mcUnitContainer"></div>
+
+                <div class="section-title">🦅 Non-Minecraft Mobs (Custom / Legends)</div>
+                <div class="unit-selector" id="nonMcUnitContainer"></div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT COLUMN: INTERACTIVE SIMULATOR & CALCULATOR -->
+        <div class="sidebar">
+            <div class="card sticky-simulator">
+                <h2>🎯 Tactical Range Simulator</h2>
+                
+                <div style="text-align: center; margin-bottom: 8px;">
+                    <strong id="simUnitName" style="font-size: 16px; color: var(--text-main);">Select a Unit</strong>
+                    <div id="simUnitBadges" style="margin-top: 4px;"></div>
+                </div>
+
+                <!-- VIEW MODE TOGGLE -->
+                <div class="toggle-container">
+                    <button class="toggle-btn" id="btnModeBoth" onclick="setViewMode('both')">Both</button>
+                    <button class="toggle-btn" id="btnModeMove" onclick="setViewMode('move')">Movement</button>
+                    <button class="toggle-btn" id="btnModeAttack" onclick="setViewMode('attack')">Attack</button>
+                </div>
+
+                <!-- 7x7 SIMULATOR GRID -->
+                <div class="sim-grid" id="simGrid"></div>
+
+                <!-- MANA CALCULATOR -->
+                <div class="calculator-panel">
+                    <h3 style="font-size: 14px; color: var(--accent-blue); margin-bottom: 10px;">⚡ Mana Action Simulator</h3>
+                    
+                    <div class="calc-row">
+                        <span>Summon Unit</span>
+                        <button class="calc-btn" onclick="addMana('summon')">+ <span id="btnSummonCost">1</span> Mana</button>
+                    </div>
+                    
+                    <div class="calc-row" id="abilityRow" style="display: none;">
+                        <span id="abilityLabel">Ability</span>
+                        <button class="calc-btn" onclick="addMana('ability')">+ <span id="btnAbilityCost">2</span> Mana</button>
+                    </div>
+
+                    <div class="calc-row" id="fusionRow" style="display: none;">
+                        <span>Perform Fusion</span>
+                        <button class="calc-btn" onclick="addMana('fusion')">+ 5 Mana</button>
+                    </div>
+
+                    <div class="mana-total">
+                        Total Mana: <span id="totalMana">0</span>
+                    </div>
+                    
+                    <button class="calc-btn" style="width: 100%; margin-top: 10px; background-color: #334155; color: #f8fafc;" onclick="resetMana()">Reset Mana</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Center cell = [3,3]
+        // Range N attack hits all squares 1, 2, ..., N in applicable directions.
+        const units = [
+            // MINECRAFT MOBS
+            {
+                id: 0, category: "mc",
+                name: "Pig (Temperate)", cost: 1, tags: [],
+                move: [[2,3],[3,2],[3,4],[4,3]],
+                attack: [[2,3]], // Range 1 Top
+                desc: "Standard temperate pig with cardinal movement."
+            },
+            {
+                id: 1, category: "mc",
+                name: "Pig (Warm)", cost: 1, tags: [],
+                move: [[2,4],[3,2],[3,4],[4,2]],
+                attack: [[2,3]], // Range 1 Top
+                desc: "Warm variant with top-right and bottom-left diagonal mobility."
+            },
+            {
+                id: 2, category: "mc",
+                name: "Pig (Cold)", cost: 1, tags: [],
+                move: [[2,2],[2,3],[4,3],[4,4]],
+                attack: [[2,3]], // Range 1 Top
+                desc: "Cold variant with top-left and bottom-right corner mobility."
+            },
+            {
+                id: 3, category: "mc",
+                name: "Cow (Temperate)", cost: 2, tags: [],
+                ability: "Bull Rush (2 Mana)", abilityCost: 2,
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,3]],
+                attack: [[2,3],[3,2],[3,4]],
+                desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
+            },
+            {
+                id: 4, category: "mc",
+                name: "Cow (Warm)", cost: 2, tags: [],
+                ability: "Bull Rush (2 Mana)", abilityCost: 2,
+                move: [[2,3],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                attack: [[3,2],[3,4],[4,3]],
+                desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
+            },
+            {
+                id: 5, category: "mc",
+                name: "Cow (Cold)", cost: 2, tags: [],
+                ability: "Bull Rush (2 Mana)", abilityCost: 2,
+                move: [[2,3],[3,2],[3,4],[4,3]],
+                attack: [[2,2],[2,4],[3,2],[3,4],[4,3]],
+                desc: "Bull Rush: Charges forward, non-stop until colliding. Both die."
+            },
+            {
+                id: 6, category: "mc",
+                name: "Chicken (Temperate)", cost: 1, tags: [],
+                passive: "Pluck (Knockback 1 tile, 0 DMG)",
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                attack: [[2,3]],
+                desc: "Pluck: Deals 0 damage; knocks target back 1 tile."
+            },
+            {
+                id: 7, category: "mc",
+                name: "Chicken (Warm)", cost: 1, tags: [],
+                passive: "Pluck (Knockback 1 tile, 0 DMG)",
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                attack: [[2,4]],
+                desc: "Pluck: Top-right attack direction."
+            },
+            {
+                id: 8, category: "mc",
+                name: "Chicken (Cold)", cost: 1, tags: [],
+                passive: "Pluck (Knockback 1 tile, 0 DMG)",
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                attack: [[2,2]],
+                desc: "Pluck: Top-left attack direction."
+            },
+            {
+                id: 9, category: "mc",
+                name: "Creeper", cost: 1, tags: [],
+                passive: "Kaboom (Self-destruct on attack)",
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                attack: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                desc: "Explodes upon attacking, killing itself and damaging area."
+            },
+            {
+                id: 10, category: "mc",
+                name: "Skeleton", cost: 4, tags: [],
+                move: [[2,2],[2,4],[3,2],[3,4],[4,2],[4,4]],
+                // Range 4 cardinal: hits squares 1, 2, 3, and 4
+                attack: [
+                    [2,3],[1,3],[0,3], // Up (1,2,3 - 4th is off grid)
+                    [4,3],[5,3],[6,3], // Down (1,2,3 - 4th is off grid)
+                    [3,2],[3,1],[3,0], // Left
+                    [3,4],[3,5],[3,6]  // Right
+                ],
+                desc: "Long range 4-tile sniper: hits all squares from 1 up to 4 tiles away orthogonally."
+            },
+            {
+                id: 11, category: "mc",
+                name: "Spider", cost: 3, tags: [],
+                ability: "Webber (1 Mana)", abilityCost: 1,
+                move: [[2,2],[2,4],[4,2],[4,4]],
+                attack: [[2,3]],
+                desc: "Webber: Root an enemy for 2 turns."
+            },
+            {
+                id: 12, category: "mc",
+                name: "Spider Jockey", cost: "F", tags: ["Fusion"],
+                ability: "Webber (1 Mana)", abilityCost: 1, isFusion: true,
+                move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
+                // Range 4 cardinal + diagonal range 1
+                attack: [
+                    [2,2],[2,4],[4,2],[4,4], // Diagonal range 1
+                    [2,3],[1,3],[0,3], // Cardinal up range 1..4
+                    [4,3],[5,3],[6,3], // Cardinal down range 1..4
+                    [3,2],[3,1],[3,0], // Cardinal left
+                    [3,4],[3,5],[3,6]  // Cardinal right
+                ],
+                desc: "Fusion of Spider + Skeleton. Hyper mobile with long-range 4-tile reach."
+            },
+            {
+                id: 13, category: "mc",
+                name: "Zombie", cost: 2, tags: [],
+                move: [[2,3],[3,2],[3,4],[4,3]],
+                // Range 2 cardinal: hits squares 1 and 2
+                attack: [
+                    [2,3],[1,3], // Up 1 & 2
+                    [4,3],[5,3], // Down 1 & 2
+                    [3,2],[3,1], // Left 1 & 2
+                    [3,4],[3,5]  // Right 1 & 2
+                ],
+                desc: "Extended 2-tile cardinal attack range: hits squares 1 and 2 away."
+            },
+
+            // NON-MINECRAFT MOBS (CUSTOM / LEGENDS)
+            {
+                id: 14, category: "non-mc",
+                name: "Rio (Infinity's Bird)", cost: 5, tags: ["FL", "L"],
+                move: [[1,2],[1,3],[1,4],[2,1],[2,3],[2,5],[3,1],[3,2],[3,4],[3,5],[4,1],[4,3],[4,5],[5,2],[5,3],[5,4]],
+                // Range 2 diagonal attack: hits squares 1 and 2 along corners
+                attack: [
+                    [2,2],[1,1], // Top-Left 1 and 2
+                    [2,4],[1,5], // Top-Right 1 and 2
+                    [4,2],[5,1], // Bottom-Left 1 and 2
+                    [4,4],[5,5]  // Bottom-Right 1 and 2
+                ],
+                desc: "Legendary bird with massive flying reach and 2-tile corner attacks."
+            },
+            {
+                id: 15, category: "non-mc",
+                name: "Avi (Infinity's Past Bird)", cost: 3, tags: ["FL", "L"],
+                move: [[1,3],[3,2],[3,4],[5,3]],
+                attack: [[2,2],[2,4],[4,2],[4,4]],
+                desc: "Past legend with quick cross movement and diagonal attacks."
+            },
+            {
+                id: 16, category: "non-mc",
+                name: "Sjaakie (Infinity's Past Bird)", cost: 6, tags: ["FL", "L"],
+                move: [[0,0],[0,6],[6,0],[6,6],[1,1],[1,5],[5,1],[5,5],[2,2],[2,4],[4,2],[4,4],[2,3],[3,2],[3,4],[4,3]],
+                // Range 3 surround attack (hits 1, 2, and 3 away)
+                attack: [
+                    [2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4], // 1-ring
+                    [1,1],[1,2],[1,3],[1,4],[1,5],[2,1],[2,5],[3,1],[3,5],[4,1],[4,5],[5,1],[5,2],[5,3],[5,4],[5,5] // 2-ring
+                ],
+                desc: "Has infinite movement lines across diagonals and wide area attacks."
+            }
+        ];
+
+        let selectedUnit = units[0];
+        let currentMana = 0;
+        let viewMode = 'both';
+
+        function init() {
+            renderUnitCards();
+            selectUnit(0);
+        }
+
+        function renderUnitCards() {
+            const mcContainer = document.getElementById("mcUnitContainer");
+            const nonMcContainer = document.getElementById("nonMcUnitContainer");
+            mcContainer.innerHTML = "";
+            nonMcContainer.innerHTML = "";
+
+            units.forEach((unit) => {
+                const card = document.createElement("div");
+                card.id = `unit-card-${unit.id}`;
+                card.className = `unit-card ${unit.id === 0 ? 'active' : ''}`;
+                card.onclick = () => selectUnit(unit.id);
+                
+                let badges = `<span class="badge badge-cost">Cost: ${unit.cost}</span>`;
+                if (unit.tags.includes("FL")) badges += `<span class="badge badge-fl">FL</span>`;
+                if (unit.tags.includes("L")) badges += `<span class="badge badge-l">LEGEND</span>`;
+                if (unit.tags.includes("Fusion")) badges += `<span class="badge badge-f">FUSION</span>`;
+
+                card.innerHTML = `
+                    <div class="unit-card-header">
+                        <span class="unit-name">${unit.name}</span>
+                    </div>
+                    <div>${badges}</div>
+                    <div class="unit-desc">${unit.desc}</div>
+                `;
+
+                if (unit.category === 'mc') {
+                    mcContainer.appendChild(card);
+                } else {
+                    nonMcContainer.appendChild(card);
+                }
+            });
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            
+            document.getElementById("btnModeBoth").className = `toggle-btn ${mode === 'both' ? 'active-both' : ''}`;
+            document.getElementById("btnModeMove").className = `toggle-btn ${mode === 'move' ? 'active-move' : ''}`;
+            document.getElementById("btnModeAttack").className = `toggle-btn ${mode === 'attack' ? 'active-attack' : ''}`;
+
+            renderGrid();
+        }
+
+        function selectUnit(id) {
+            selectedUnit = units.find(u => u.id === id);
+            
+            document.querySelectorAll(".unit-card").forEach((card) => {
+                card.classList.remove("active");
+            });
+            const activeCard = document.getElementById(`unit-card-${id}`);
+            if (activeCard) activeCard.classList.add("active");
+
+            document.getElementById("simUnitName").innerText = selectedUnit.name;
+            let badgesHtml = `<span class="badge badge-cost">Cost: ${selectedUnit.cost}</span>`;
+            if (selectedUnit.tags.includes("FL")) badgesHtml += `<span class="badge badge-fl">FL</span>`;
+            if (selectedUnit.tags.includes("L")) badgesHtml += `<span class="badge badge-l">LEGEND</span>`;
+            if (selectedUnit.tags.includes("Fusion")) badgesHtml += `<span class="badge badge-f">FUSION</span>`;
+            document.getElementById("simUnitBadges").innerHTML = badgesHtml;
+
+            document.getElementById("btnSummonCost").innerText = selectedUnit.cost;
+            
+            const abilityRow = document.getElementById("abilityRow");
+            if (selectedUnit.ability) {
+                abilityRow.style.display = "flex";
+                document.getElementById("abilityLabel").innerText = selectedUnit.ability.split('(')[0];
+                document.getElementById("btnAbilityCost").innerText = selectedUnit.abilityCost;
+            } else {
+                abilityRow.style.display = "none";
+            }
+
+            const fusionRow = document.getElementById("fusionRow");
+            if (selectedUnit.isFusion) {
+                fusionRow.style.display = "flex";
+            } else {
+                fusionRow.style.display = "none";
+            }
+
+            setViewMode(viewMode);
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById("simGrid");
+            grid.innerHTML = "";
+            const center = [3, 3];
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cell = document.createElement("div");
+                    cell.className = "sim-cell";
+
+                    const isCenter = r === center[0] && c === center[1];
+                    const isMove = selectedUnit.move.some(p => p[0] === r && p[1] === c);
+                    const isAttack = selectedUnit.attack.some(p => p[0] === r && p[1] === c);
+
+                    if (isCenter) {
+                        cell.classList.add("center");
+                        cell.innerText = "O";
+                    } else if (viewMode === 'both' && isMove && isAttack) {
+                        cell.classList.add("both");
+                        cell.innerText = "⚡";
+                    } else if ((viewMode === 'both' || viewMode === 'move') && isMove) {
+                        cell.classList.add("move");
+                        cell.innerText = "M";
+                    } else if ((viewMode === 'both' || viewMode === 'attack') && isAttack) {
+                        cell.classList.add("attack");
+                        cell.innerText = "A";
+                    } else {
+                        cell.innerText = "•";
+                    }
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function addMana(type) {
+            if (type === 'summon') {
+                const cost = parseInt(selectedUnit.cost) || 0;
+                currentMana += cost;
+            } else if (type === 'ability') {
+                currentMana += selectedUnit.abilityCost || 0;
+            } else if (type === 'fusion') {
+                currentMana += 5;
+            }
+            document.getElementById("totalMana").innerText = currentMana;
+        }
+
+        function resetMana() {
+            currentMana = 0;
+            document.getElementById("totalMana").innerText = currentMana;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
