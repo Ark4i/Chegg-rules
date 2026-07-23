@@ -206,7 +206,6 @@
             top: 24px;
         }
 
-        /* MODE TOGGLE SWITCH */
         .toggle-container {
             display: flex;
             background-color: #0f172a;
@@ -230,20 +229,9 @@
             transition: all 0.2s ease;
         }
 
-        .toggle-btn.active-both {
-            background-color: var(--accent-amber);
-            color: #0f172a;
-        }
-
-        .toggle-btn.active-move {
-            background-color: var(--accent-green);
-            color: #0f172a;
-        }
-
-        .toggle-btn.active-attack {
-            background-color: var(--accent-red);
-            color: #ffffff;
-        }
+        .toggle-btn.active-both { background-color: var(--accent-amber); color: #0f172a; }
+        .toggle-btn.active-move { background-color: var(--accent-green); color: #0f172a; }
+        .toggle-btn.active-attack { background-color: var(--accent-red); color: #ffffff; }
 
         .sim-grid {
             display: grid;
@@ -268,30 +256,30 @@
             font-size: 13px;
             color: var(--text-muted);
             transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
         }
+        
+        .sim-cell:hover { filter: brightness(1.2); }
 
-        .sim-cell.center {
-            background-color: var(--accent-blue);
-            color: #0f172a;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-        }
+        .sim-cell.center { background-color: var(--accent-blue) !important; color: #0f172a !important; box-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        .sim-cell.move { background-color: rgba(34, 197, 94, 0.3); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.6); }
+        .sim-cell.attack { background-color: rgba(239, 68, 68, 0.3); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.6); }
+        .sim-cell.both { background-color: rgba(245, 158, 11, 0.3); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.6); }
 
-        .sim-cell.move {
-            background-color: rgba(34, 197, 94, 0.3);
-            color: #4ade80;
-            border: 1px solid rgba(34, 197, 94, 0.6);
-        }
-
-        .sim-cell.attack {
-            background-color: rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.6);
-        }
-
-        .sim-cell.both {
-            background-color: rgba(245, 158, 11, 0.3);
-            color: #fde047;
-            border: 1px solid rgba(245, 158, 11, 0.6);
+        /* BUILDER STYLES */
+        .builder-output {
+            width: 100%;
+            height: 80px;
+            background-color: #090d16;
+            color: var(--accent-green);
+            font-family: monospace;
+            font-size: 12px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 12px;
+            resize: none;
         }
 
         /* MANA CALCULATOR */
@@ -323,9 +311,7 @@
             transition: background-color 0.2s ease;
         }
 
-        .calc-btn:hover {
-            background-color: #7dd3fc;
-        }
+        .calc-btn:hover { background-color: #7dd3fc; }
 
         .mana-total {
             font-size: 20px;
@@ -351,22 +337,20 @@
 
     <div class="layout-grid">
         
-        <!-- LEFT COLUMN: RULES & UNIT CODEX -->
+        <!-- LEFT COLUMN -->
         <div class="main-content">
-            
             <section class="card">
                 <h2>📜 Rules Overview</h2>
                 <ul class="rule-list">
-                    <li><strong>Core Rule:</strong> Standard Chegg rules apply. The <strong>Villager</strong> is replaced by a <strong>Crown</strong> (movement remains unchanged).</li>
+                    <li><strong>Core Rule:</strong> Standard Chegg rules apply. The <strong>Villager</strong> is replaced by a <strong>Crown</strong> (movement unchanged).</li>
                     <li><strong>Legend (L):</strong> Max 1 copy per deck. End of turn requires <strong>1 unspent Mana per Legend on field</strong>, or they return to your deck.</li>
-                    <li><strong>Fusion (F):</strong> Costs <strong>5 Mana</strong> to fuse. Requires both component troops on field. Fused troops return to deck. Max 3 total Fusion cards per deck.</li>
-                    <li><strong>Grid Notations:</strong> <code>x</code> = Standard tile range | <code>o</code> = Unit | <code>Numbers (2, 4)</code> = Range depth (hitting squares 1 up to N) | <code>I</code> = Infinite range.</li>
+                    <li><strong>Fusion (F):</strong> Costs <strong>5 Mana</strong> to fuse. Requires both component troops on field. Fused troops return to deck. Max 3 total Fusions.</li>
                 </ul>
             </section>
 
             <section class="card">
                 <h2>🎮 Unit Roster</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Click any unit card to simulate its grid pattern and test action mana costs.</p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Click a unit card to simulate its grid pattern. <b>Scroll down to build custom ranges!</b></p>
                 
                 <div class="section-title">🧱 Minecraft Mobs</div>
                 <div class="unit-selector" id="mcUnitContainer"></div>
@@ -375,9 +359,26 @@
                 <div class="unit-selector" id="nonMcUnitContainer"></div>
             </section>
 
+            <!-- NEW DEVELOPER BUILDER TOOL -->
+            <section class="card" style="border-color: var(--accent-purple);">
+                <h2>🛠️ Visual Unit Builder (For Devs)</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                    Need to fix a range or create a new unit? <b>Click the grid tiles below to cycle them:</b><br>
+                    <span style="color:#4ade80">Empty</span> ➔ <span style="color:#4ade80">Move (M)</span> ➔ <span style="color:#fca5a5">Attack (A)</span> ➔ <span style="color:#fde047">Both (⚡)</span> ➔ <span style="color:#4ade80">Empty</span>.
+                </p>
+                
+                <!-- Builder Grid -->
+                <div class="sim-grid" id="builderGrid" style="max-width: 400px; margin: 0 auto;"></div>
+                
+                <!-- Output Code -->
+                <p style="font-size: 13px; font-weight: bold; margin-top: 12px; color: var(--text-main);">Copy & Paste this into your units array:</p>
+                <textarea id="builderOutput" class="builder-output" readonly></textarea>
+                <button class="calc-btn" style="margin-top: 8px;" onclick="clearBuilder()">Clear Builder Grid</button>
+            </section>
+
         </div>
 
-        <!-- RIGHT COLUMN: INTERACTIVE SIMULATOR & CALCULATOR -->
+        <!-- RIGHT COLUMN: INTERACTIVE SIMULATOR -->
         <div class="sidebar">
             <div class="card sticky-simulator">
                 <h2>🎯 Tactical Range Simulator</h2>
@@ -387,7 +388,6 @@
                     <div id="simUnitBadges" style="margin-top: 4px;"></div>
                 </div>
 
-                <!-- VIEW MODE TOGGLE -->
                 <div class="toggle-container">
                     <button class="toggle-btn" id="btnModeBoth" onclick="setViewMode('both')">Both</button>
                     <button class="toggle-btn" id="btnModeMove" onclick="setViewMode('move')">Movement</button>
@@ -425,33 +425,31 @@
 
             </div>
         </div>
-
     </div>
 
     <script>
-        // Center cell = [3,3]
-        // Range N attack hits all squares 1, 2, ..., N in applicable directions.
+        // --- 1. UNIT DATABASE ---
+        // Edit this array to add or fix units! The center is always [3, 3].
         const units = [
-            // MINECRAFT MOBS
             {
                 id: 0, category: "mc",
                 name: "Pig (Temperate)", cost: 1, tags: [],
                 move: [[2,3],[3,2],[3,4],[4,3]],
-                attack: [[2,3]], // Range 1 Top
+                attack: [[2,3]], 
                 desc: "Standard temperate pig with cardinal movement."
             },
             {
                 id: 1, category: "mc",
                 name: "Pig (Warm)", cost: 1, tags: [],
                 move: [[2,4],[3,2],[3,4],[4,2]],
-                attack: [[2,3]], // Range 1 Top
+                attack: [[2,3]], 
                 desc: "Warm variant with top-right and bottom-left diagonal mobility."
             },
             {
                 id: 2, category: "mc",
                 name: "Pig (Cold)", cost: 1, tags: [],
                 move: [[2,2],[2,3],[4,3],[4,4]],
-                attack: [[2,3]], // Range 1 Top
+                attack: [[2,3]], 
                 desc: "Cold variant with top-left and bottom-right corner mobility."
             },
             {
@@ -514,13 +512,7 @@
                 id: 10, category: "mc",
                 name: "Skeleton", cost: 4, tags: [],
                 move: [[2,2],[2,4],[3,2],[3,4],[4,2],[4,4]],
-                // Range 4 cardinal: hits squares 1, 2, 3, and 4
-                attack: [
-                    [2,3],[1,3],[0,3], // Up (1,2,3 - 4th is off grid)
-                    [4,3],[5,3],[6,3], // Down (1,2,3 - 4th is off grid)
-                    [3,2],[3,1],[3,0], // Left
-                    [3,4],[3,5],[3,6]  // Right
-                ],
+                attack: [[2,3],[1,3],[0,3],[4,3],[5,3],[6,3],[3,2],[3,1],[3,0],[3,4],[3,5],[3,6]],
                 desc: "Long range 4-tile sniper: hits all squares from 1 up to 4 tiles away orthogonally."
             },
             {
@@ -536,42 +528,21 @@
                 name: "Spider Jockey", cost: "F", tags: ["Fusion"],
                 ability: "Webber (1 Mana)", abilityCost: 1, isFusion: true,
                 move: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4]],
-                // Range 4 cardinal + diagonal range 1
-                attack: [
-                    [2,2],[2,4],[4,2],[4,4], // Diagonal range 1
-                    [2,3],[1,3],[0,3], // Cardinal up range 1..4
-                    [4,3],[5,3],[6,3], // Cardinal down range 1..4
-                    [3,2],[3,1],[3,0], // Cardinal left
-                    [3,4],[3,5],[3,6]  // Cardinal right
-                ],
+                attack: [[2,2],[2,4],[4,2],[4,4],[2,3],[1,3],[0,3],[4,3],[5,3],[6,3],[3,2],[3,1],[3,0],[3,4],[3,5],[3,6]],
                 desc: "Fusion of Spider + Skeleton. Hyper mobile with long-range 4-tile reach."
             },
             {
                 id: 13, category: "mc",
                 name: "Zombie", cost: 2, tags: [],
                 move: [[2,3],[3,2],[3,4],[4,3]],
-                // Range 2 cardinal: hits squares 1 and 2
-                attack: [
-                    [2,3],[1,3], // Up 1 & 2
-                    [4,3],[5,3], // Down 1 & 2
-                    [3,2],[3,1], // Left 1 & 2
-                    [3,4],[3,5]  // Right 1 & 2
-                ],
+                attack: [[2,3],[1,3],[4,3],[5,3],[3,2],[3,1],[3,4],[3,5]],
                 desc: "Extended 2-tile cardinal attack range: hits squares 1 and 2 away."
             },
-
-            // NON-MINECRAFT MOBS (CUSTOM / LEGENDS)
             {
                 id: 14, category: "non-mc",
                 name: "Rio (Infinity's Bird)", cost: 5, tags: ["FL", "L"],
                 move: [[1,2],[1,3],[1,4],[2,1],[2,3],[2,5],[3,1],[3,2],[3,4],[3,5],[4,1],[4,3],[4,5],[5,2],[5,3],[5,4]],
-                // Range 2 diagonal attack: hits squares 1 and 2 along corners
-                attack: [
-                    [2,2],[1,1], // Top-Left 1 and 2
-                    [2,4],[1,5], // Top-Right 1 and 2
-                    [4,2],[5,1], // Bottom-Left 1 and 2
-                    [4,4],[5,5]  // Bottom-Right 1 and 2
-                ],
+                attack: [[2,2],[1,1],[2,4],[1,5],[4,2],[5,1],[4,4],[5,5]],
                 desc: "Legendary bird with massive flying reach and 2-tile corner attacks."
             },
             {
@@ -585,15 +556,12 @@
                 id: 16, category: "non-mc",
                 name: "Sjaakie (Infinity's Past Bird)", cost: 6, tags: ["FL", "L"],
                 move: [[0,0],[0,6],[6,0],[6,6],[1,1],[1,5],[5,1],[5,5],[2,2],[2,4],[4,2],[4,4],[2,3],[3,2],[3,4],[4,3]],
-                // Range 3 surround attack (hits 1, 2, and 3 away)
-                attack: [
-                    [2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4], // 1-ring
-                    [1,1],[1,2],[1,3],[1,4],[1,5],[2,1],[2,5],[3,1],[3,5],[4,1],[4,5],[5,1],[5,2],[5,3],[5,4],[5,5] // 2-ring
-                ],
+                attack: [[2,2],[2,3],[2,4],[3,2],[3,4],[4,2],[4,3],[4,4],[1,1],[1,2],[1,3],[1,4],[1,5],[2,1],[2,5],[3,1],[3,5],[4,1],[4,5],[5,1],[5,2],[5,3],[5,4],[5,5]],
                 desc: "Has infinite movement lines across diagonals and wide area attacks."
             }
         ];
 
+        // --- 2. APP LOGIC ---
         let selectedUnit = units[0];
         let currentMana = 0;
         let viewMode = 'both';
@@ -601,6 +569,7 @@
         function init() {
             renderUnitCards();
             selectUnit(0);
+            initBuilder();
         }
 
         function renderUnitCards() {
@@ -638,20 +607,15 @@
 
         function setViewMode(mode) {
             viewMode = mode;
-            
             document.getElementById("btnModeBoth").className = `toggle-btn ${mode === 'both' ? 'active-both' : ''}`;
             document.getElementById("btnModeMove").className = `toggle-btn ${mode === 'move' ? 'active-move' : ''}`;
             document.getElementById("btnModeAttack").className = `toggle-btn ${mode === 'attack' ? 'active-attack' : ''}`;
-
             renderGrid();
         }
 
         function selectUnit(id) {
             selectedUnit = units.find(u => u.id === id);
-            
-            document.querySelectorAll(".unit-card").forEach((card) => {
-                card.classList.remove("active");
-            });
+            document.querySelectorAll(".unit-card").forEach(card => card.classList.remove("active"));
             const activeCard = document.getElementById(`unit-card-${id}`);
             if (activeCard) activeCard.classList.add("active");
 
@@ -673,13 +637,7 @@
                 abilityRow.style.display = "none";
             }
 
-            const fusionRow = document.getElementById("fusionRow");
-            if (selectedUnit.isFusion) {
-                fusionRow.style.display = "flex";
-            } else {
-                fusionRow.style.display = "none";
-            }
-
+            document.getElementById("fusionRow").style.display = selectedUnit.isFusion ? "flex" : "none";
             setViewMode(viewMode);
         }
 
@@ -719,20 +677,87 @@
         }
 
         function addMana(type) {
-            if (type === 'summon') {
-                const cost = parseInt(selectedUnit.cost) || 0;
-                currentMana += cost;
-            } else if (type === 'ability') {
-                currentMana += selectedUnit.abilityCost || 0;
-            } else if (type === 'fusion') {
-                currentMana += 5;
-            }
+            if (type === 'summon') currentMana += parseInt(selectedUnit.cost) || 0;
+            else if (type === 'ability') currentMana += selectedUnit.abilityCost || 0;
+            else if (type === 'fusion') currentMana += 5;
             document.getElementById("totalMana").innerText = currentMana;
         }
 
         function resetMana() {
             currentMana = 0;
             document.getElementById("totalMana").innerText = currentMana;
+        }
+
+        // --- 3. BUILDER LOGIC ---
+        // 0: Empty, 1: Move, 2: Attack, 3: Both
+        let builderState = Array(7).fill().map(() => Array(7).fill(0));
+
+        function initBuilder() {
+            renderBuilderGrid();
+            updateBuilderOutput();
+        }
+
+        function clearBuilder() {
+            builderState = Array(7).fill().map(() => Array(7).fill(0));
+            renderBuilderGrid();
+            updateBuilderOutput();
+        }
+
+        function cycleBuilderCell(r, c) {
+            if (r === 3 && c === 3) return; // Ignore center
+            builderState[r][c] = (builderState[r][c] + 1) % 4;
+            renderBuilderGrid();
+            updateBuilderOutput();
+        }
+
+        function renderBuilderGrid() {
+            const grid = document.getElementById("builderGrid");
+            grid.innerHTML = "";
+            const center = [3, 3];
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cell = document.createElement("div");
+                    cell.className = "sim-cell";
+                    cell.onclick = () => cycleBuilderCell(r, c);
+
+                    if (r === center[0] && c === center[1]) {
+                        cell.classList.add("center");
+                        cell.innerText = "O";
+                        cell.style.cursor = "not-allowed";
+                    } else {
+                        const state = builderState[r][c];
+                        if (state === 1) {
+                            cell.classList.add("move");
+                            cell.innerText = "M";
+                        } else if (state === 2) {
+                            cell.classList.add("attack");
+                            cell.innerText = "A";
+                        } else if (state === 3) {
+                            cell.classList.add("both");
+                            cell.innerText = "⚡";
+                        } else {
+                            cell.innerText = "•";
+                        }
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function updateBuilderOutput() {
+            let moveCoords = [];
+            let attackCoords = [];
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    if (builderState[r][c] === 1 || builderState[r][c] === 3) moveCoords.push(`[${r},${c}]`);
+                    if (builderState[r][c] === 2 || builderState[r][c] === 3) attackCoords.push(`[${r},${c}]`);
+                }
+            }
+            
+            const outBox = document.getElementById("builderOutput");
+            outBox.value = `move: [${moveCoords.join(",")}],\nattack: [${attackCoords.join(",")}]`;
         }
 
         window.onload = init;
