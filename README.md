@@ -8,14 +8,13 @@
 ## How the "sync" works
 GitHub Pages is a static host — there's no database. So instead, the editor talks directly to the **GitHub API** and commits an updated `units.json` straight into your repo. GitHub Pages automatically rebuilds after every commit (usually under a minute), and the rulebook page fetches `units.json` fresh on every load. So: edit → publish → wait a few seconds → anyone who reloads sees it. Not real-time, but no server needed.
 
-## One-time setup
-1. Push all three files (plus `README.md` if you want) to a GitHub repo, and turn on **GitHub Pages** for it (Settings → Pages → deploy from branch).
-2. Create a **personal access token** so the editor is allowed to write to your repo:
+
+Create a **personal access token** so the editor is allowed to write to your repo:
    - Go to https://github.com/settings/tokens?type=beta and click **"Generate new token"** (fine-grained).
    - Under **Repository access**, select "Only select repositories" and pick this repo.
    - Under **Permissions → Repository permissions**, set **Contents** to **Read and write**.
    - Generate it and copy the token (starts with `github_pat_...`).
-3. Open `editor.html` (either locally or on your live GitHub Pages site), expand **Repository Settings**, and fill in:
+Open `editor.html` (either locally or on your live GitHub Pages site), expand **Repository Settings**, and fill in:
    - your GitHub username, the repo name, the branch (usually `main`), and the path (`units.json` if it's at the repo root).
    - paste in the token.
    - tick "remember" for whichever fields you don't want to retype every time. **Only tick "remember token" on a device you trust** — it's stored in that browser's `localStorage`, nowhere else.
