@@ -1084,37 +1084,5 @@
       ]
     ],
     "desc": "Has infinite movement lines across diagonals and wide area attacks."
-  },
-  {
-    "id": 17,
-    "category": "mc",
-    "name": "Test",
-    "cost": 1,
-    "tags": [],
-    "move": [
-      [
-        4,
-        2
-      ],
-      [
-        2,
-        4
-      ],
-      [
-        4,
-        6
-      ],
-      [
-        6,
-        4
-      ]
-    ],
-    "attack": [
-      [
-        3,
-        4
-      ]
-    ],
-    "desc": ""
   }
 ]
