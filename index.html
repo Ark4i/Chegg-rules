@@ -324,7 +324,8 @@
         .btn-load { background-color: var(--accent-blue); color: #0f172a; }
         .btn-update { background-color: var(--accent-amber); color: #0f172a; }
         .btn-create { background-color: var(--accent-green); color: #0f172a; }
-        .btn-clear { background-color: var(--accent-red); }
+        .btn-clear { background-color: var(--border-color); }
+        .btn-reset { background-color: var(--accent-red); width: 100%; margin-top: 8px; }
 
         /* MANA CALCULATOR */
         .calculator-panel {
@@ -407,7 +408,7 @@
             <section class="card" style="border-color: var(--accent-purple);">
                 <h2>🛠️ Unit Editor & Creator</h2>
                 <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-                    Click <b>Load Selected Unit</b> to pull the currently viewed unit in here, modify it, and click <b>Update</b>. Or, start fresh and <b>Create New</b>!
+                    Units created or updated here are automatically saved to your browser so they stay when you refresh!
                 </p>
                 
                 <div class="builder-layout">
@@ -430,11 +431,12 @@
                         <input type="text" id="b-desc" placeholder="Unit Description / Abilities" />
                         
                         <div class="btn-group">
-                            <button class="action-btn btn-load" onclick="loadToBuilder()">⬇️ Load Selected Unit</button>
+                            <button class="action-btn btn-load" onclick="loadToBuilder()">⬇️ Load Selected</button>
                             <button class="action-btn btn-update" onclick="updateUnit()">💾 Update Unit</button>
                             <button class="action-btn btn-create" onclick="createNewUnit()">➕ Create New</button>
                             <button class="action-btn btn-clear" onclick="clearBuilder()">🗑️ Clear Grid</button>
                         </div>
+                        <button class="action-btn btn-reset" onclick="resetToDefaults()">⚠️ Factory Reset Units</button>
                     </div>
                 </div>
             </section>
@@ -491,8 +493,8 @@
     </div>
 
     <script>
-        // --- 1. UNIT DATABASE ---
-        let units = [
+        // --- 1. DEFAULT UNIT DATABASE ---
+        const defaultUnits = [
             {
                 id: 0, category: "mc",
                 name: "Pig (Temperate)", cost: 1, tags: [],
@@ -539,14 +541,44 @@
             }
         ];
 
-        // --- 2. APP LOGIC ---
-        let selectedUnit = units[0];
+        let units = [];
+        let selectedUnit = null;
         let currentMana = 0;
         let viewMode = 'both';
 
+        // --- 2. LOCAL STORAGE LOGIC ---
+        function loadData() {
+            const savedData = localStorage.getItem('cheggUnitsData');
+            if (savedData) {
+                try {
+                    units = JSON.parse(savedData);
+                } catch (e) {
+                    console.error("Error loading saved units:", e);
+                    units = JSON.parse(JSON.stringify(defaultUnits));
+                }
+            } else {
+                units = JSON.parse(JSON.stringify(defaultUnits));
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('cheggUnitsData', JSON.stringify(units));
+        }
+
+        function resetToDefaults() {
+            if (confirm("Are you sure you want to delete all custom units and edits? This cannot be undone.")) {
+                localStorage.removeItem('cheggUnitsData');
+                location.reload();
+            }
+        }
+
+        // --- 3. APP LOGIC ---
         function init() {
+            loadData();
             renderUnitCards();
-            selectUnit(0);
+            if (units.length > 0) {
+                selectUnit(units[0].id);
+            }
             initBuilder();
         }
 
@@ -624,14 +656,16 @@
             grid.innerHTML = "";
             const center = [4, 4];
 
+            if (!selectedUnit) return;
+
             for (let r = 0; r < 9; r++) {
                 for (let c = 0; c < 9; c++) {
                     const cell = document.createElement("div");
                     cell.className = "sim-cell";
 
                     const isCenter = r === center[0] && c === center[1];
-                    const isMove = selectedUnit.move.some(p => p[0] === r && p[1] === c);
-                    const isAttack = selectedUnit.attack.some(p => p[0] === r && p[1] === c);
+                    const isMove = selectedUnit.move && selectedUnit.move.some(p => p[0] === r && p[1] === c);
+                    const isAttack = selectedUnit.attack && selectedUnit.attack.some(p => p[0] === r && p[1] === c);
 
                     if (isCenter) {
                         cell.classList.add("center");
@@ -657,7 +691,7 @@
         function addMana(type) {
             if (type === 'summon') {
                 const cost = parseInt(selectedUnit.cost);
-                currentMana += isNaN(cost) ? 0 : cost; // Fallback if cost is "F"
+                currentMana += isNaN(cost) ? 0 : cost; 
             }
             else if (type === 'ability') currentMana += selectedUnit.abilityCost || 0;
             else if (type === 'fusion') currentMana += 5;
@@ -669,7 +703,7 @@
             document.getElementById("totalMana").innerText = currentMana;
         }
 
-        // --- 3. IN-BROWSER UNIT EDITOR ---
+        // --- 4. IN-BROWSER UNIT EDITOR ---
         let builderState = Array(9).fill().map(() => Array(9).fill(0));
 
         function initBuilder() {
@@ -725,7 +759,6 @@
             }
         }
 
-        // --- LOAD, UPDATE, CREATE LOGIC ---
         function loadToBuilder() {
             if (!selectedUnit) return;
             
@@ -734,12 +767,10 @@
             document.getElementById("b-category").value = selectedUnit.category;
             document.getElementById("b-desc").value = selectedUnit.desc || "";
 
-            // Clear builder matrix
             builderState = Array(9).fill().map(() => Array(9).fill(0));
             
-            // Reconstruct matrix by adding 1 for move, 2 for attack (results in 3 for both)
-            selectedUnit.move.forEach(p => { builderState[p[0]][p[1]] += 1; });
-            selectedUnit.attack.forEach(p => { builderState[p[0]][p[1]] += 2; });
+            if(selectedUnit.move) selectedUnit.move.forEach(p => { builderState[p[0]][p[1]] += 1; });
+            if(selectedUnit.attack) selectedUnit.attack.forEach(p => { builderState[p[0]][p[1]] += 2; });
 
             renderBuilderGrid();
         }
@@ -767,6 +798,7 @@
             selectedUnit.move = coords.move;
             selectedUnit.attack = coords.attack;
 
+            saveData(); // Save to local storage
             renderUnitCards();
             selectUnit(selectedUnit.id);
         }
@@ -787,9 +819,10 @@
             };
 
             units.push(newUnit);
+            saveData(); // Save to local storage
             renderUnitCards();
             selectUnit(newId);
-            clearBuilder(); // Reset for the next one
+            clearBuilder(); 
         }
 
         window.onload = init;
